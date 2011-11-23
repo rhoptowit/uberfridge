@@ -73,32 +73,13 @@ void updateSlowFilteredTemperatures(void){ //called every 10 seconds
   beerTempFiltSlow[0] = beerTempFiltSlow[1]; beerTempFiltSlow[1] = beerTempFiltSlow[2]; beerTempFiltSlow[2] = beerTempFiltSlow[3];
   beerTempFiltSlow[3] =   (beerTempSlow[0] + beerTempSlow[3] + 3 * (beerTempSlow[1] + beerTempSlow[2]))/3.430944333e+04
               + ( 0.8818931306    * beerTempFiltSlow[0]) + (  -2.7564831952     * beerTempFiltSlow[1]) + ( 2.8743568927 * beerTempFiltSlow[2] ); 
-  
-  /*              
-  beerSlopeFast[0] = beerSlopeFast[1]; beerSlopeFast[1] = beerSlopeFast[2]; beerSlopeFast[2] = beerSlopeFast[3]; 
-  beerSlopeFast[3] = (fridgeTempFiltSlow[3]-fridgeTempFiltSlow[0])/3;
-  
-   // Butterworth filter with cutoff frequency 0.0033*sample frequency (FS=5Hz)
-  beerSlopeFiltFast[0] = beerSlopeFiltFast[1]; beerSlopeFiltFast[1] = beerSlopeFiltFast[2]; beerSlopeFiltFast[2] = beerSlopeFiltFast[3];
-  beerSlopeFiltFast[3] =   (beerSlopeFast[0] + beerSlopeFast[3] + 3 * (beerSlopeFast[1] + beerSlopeFast[2]))/9.161507224e+05
-              + ( 0.9593783408    * beerSlopeFiltFast[0]) + (  -2.9179187925     * beerSlopeFiltFast[1]) + ( 2.9585317195 * beerSlopeFiltFast[2] );              
-              */
 }
 
 void updateSlope(void){ //called every minute
   beerTempHistory[beerTempHistoryIndex]=beerTempFiltSlow[3];
   beerSlope = beerTempHistory[beerTempHistoryIndex]-beerTempHistory[(beerTempHistoryIndex+29)%30];
   beerTempHistoryIndex = (beerTempHistoryIndex+1)%30;
-  
-  /*
-  beerSlopeSlow[0] = beerSlopeSlow[1]; beerSlopeSlow[1] = beerSlopeSlow[2]; beerSlopeSlow[2] = beerSlopeSlow[3]; 
-  beerSlopeSlow[3] = beerSlopeFiltFast[3];  
-  
-   // Butterworth filter with cutoff frequency 0.0033*sample frequency (FS=0.017Hz)
-  beerSlopeFiltSlow[0] = beerSlopeFiltSlow[1]; beerSlopeFiltSlow[1] = beerSlopeFiltSlow[2]; beerSlopeFiltSlow[2] = beerSlopeFiltSlow[3];
-  beerSlopeFiltSlow[3] =   (beerSlopeSlow[0] + beerSlopeSlow[3] + 3 * (beerSlopeSlow[1] + beerSlopeSlow[2]))/9.161507224e+05
-              + ( 0.9593783408    * beerSlopeFiltSlow[0]) + (  -2.9179187925     * beerSlopeFiltSlow[1]) + ( 2.9585317195 * beerSlopeFiltSlow[2] );   
-              */ 
+
 }
 
 void initFilters(void){
@@ -109,8 +90,6 @@ void initFilters(void){
     fridgeTempFiltFast[i]=fridgeTemperatureActual;
     beerTempFast[i]=beerTemperatureActual;
     beerTempFiltFast[i]=beerTemperatureActual;
-    //beerSlopeFast[i]=0;
-    //beerSlopeFiltFast[i]=0;    
   }
   for(int i=0;i<100;i++){
     updateTemperatures();
@@ -120,8 +99,6 @@ void initFilters(void){
     fridgeTempFiltSlow[i]=fridgeTempFiltFast[3];
     beerTempSlow[i]=beerTempFiltFast[3];
     beerTempFiltSlow[i]=beerTempFiltFast[3];
-    //beerSlopeSlow[i]=0;
-    //beerSlopeFiltSlow[i]=0;
   }
   for(int i=0;i<100;i++){
     updateSlowFilteredTemperatures();
