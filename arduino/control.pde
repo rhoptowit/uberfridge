@@ -1,13 +1,13 @@
-#include "globals.h"
+  #include "globals.h"
 #include "enums.h"
 #include <EEPROM.h>
 
 // control defines
-#define KpHeat 30
+#define KpHeat 10
 #define KpCool 5
 #define Ki 0.02
 #define KdCool (-1000)
-#define KdHeat (-5000)
+#define KdHeat (-2000)
 
 // Stay Idle when temperature is in this range
 #define IDLE_RANGE_HIGH (+5)
@@ -39,13 +39,14 @@ void updateSettings(void){
     else{
       differenceIntegral = 0;
     }
+    
     if(beerTemperatureDifference<0){ //linearly go to cool parameters in 3 hours
-      Kp = constrain(Kp-0.023, KpCool, KpHeat);
-      Kd = constrain(Kp+3.7, KpCool, KpHeat);
+      Kp = constrain(Kp+(KpCool-KpHeat)/(360*3), KpCool, KpHeat);
+      Kd = constrain(Kd+(KdCool-KdHeat)/(360*3), KdCool, KdHeat);
     }
     else{ //linearly go to heat parameters in 3 hours
-      Kp = constrain(Kp+0.023, KpCool, KpHeat);
-      Kd = constrain(Kp-3.7, KpCool, KpHeat);
+      Kp = constrain(Kp+(KpHeat-KpCool)/(360*3), KpCool, KpHeat);
+      Kd = constrain(Kd+(KdHeat-KdCool)/(360*3), KdCool, KdHeat);
     }
     fridgeTemperatureSetting = constrain(beerTemperatureSetting + Kp* beerTemperatureDifference + Ki* differenceIntegral + Kd*beerSlope, 40, 300);      
   }
@@ -256,12 +257,10 @@ unsigned long timeSinceIdle(void){
 void initControl(void){
    if(beerTemperatureSetting<beerTempFiltSlow[2]){
      Kp=KpCool;
-//     Ki=KiCool;
      Kd=KdCool;  
    }
    else{
      Kp=KpHeat;
-//     Ki=KiHeat;
      Kd=KdHeat;     
    }
 }
