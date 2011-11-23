@@ -28,21 +28,21 @@ extern float beerTemperatureSetting;
 extern float fridgeTemperatureActual;
 extern float fridgeTemperatureSetting;
 
-extern float fridgeTempFiltFast[3]; // Filtered data from sensors
-extern float fridgeTempFast[3];     // Input from filter
+extern float fridgeTempFiltFast[4]; // Filtered data from sensors
+extern float fridgeTempFast[4];     // Input from filter
+extern float beerTempFast[4];
+extern float beerTempFiltFast[4];
 
 // Slow filtered Temperatures used for peak detection
-extern float fridgeTempFiltSlow[3];
-extern float fridgeTempSlow[3];
-extern float beerTempFast[3];
-extern float beerTempFiltFast[3];
-extern float beerTempSlow[3];
-extern float beerTempFiltSlow[3];
+extern float fridgeTempFiltSlow[4];
+extern float fridgeTempSlow[4];
+extern float beerTempSlow[4];
+extern float beerTempFiltSlow[4];
 extern float beerSlope;
 
-//filtered setting for fridge temperature
-//extern float fridgeSetting[3];
-//extern float fridgeSettingInput[3];
+//history for slope calculation
+extern float beerTempHistory[30];
+extern unsigned char beerTempHistoryIndex;
 
 // Control parameters
 extern float heatOvershootEstimator;
@@ -54,9 +54,10 @@ extern float posPeak;
 extern float differenceIntegral;
 
 //Timers 
-extern unsigned long slowTimer;
-extern unsigned long fastTimer;
-extern unsigned long sampleTimer;
+extern unsigned long sampleTimerFast;
+extern unsigned long sampleTimerSlow;
+extern unsigned long slopeTimer;
+extern unsigned long settingsTimer;
 extern unsigned long lastCoolTime;
 extern unsigned long lastHeatTime;
 extern unsigned long lastIdleTime;

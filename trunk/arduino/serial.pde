@@ -14,9 +14,9 @@ void handleSerialCommunication(void){
     case 'b': //Set to constant beer temperature
       beerTemperatureSetting = numberFromSerial();
       mode = BEER_CONSTANT;
+      initControl();
       updateSettings();
       saveSettings(); //write new settings to EEPROM
-      serialBeerMessage(BEER_SETTING_FROM_SERIAL);
       doNegPeakDetect=0;
       doPosPeakDetect=0;
       lastCoolTime=0;
@@ -24,7 +24,7 @@ void handleSerialCommunication(void){
       previousState=0xFF; //force LCD update
       state=IDLE;
       lcdPrintState();
-      initControl();
+      serialBeerMessage(BEER_SETTING_FROM_SERIAL);
       break;
     case 'p': //Set profile temperature
       beerTemperatureSetting = numberFromSerial();
@@ -32,7 +32,7 @@ void handleSerialCommunication(void){
       updateSettings();
       if(abs(beerTemperatureSetting - eepromReadInt(EEPROM_BEER_SETTING))>=5){
           saveSettings(); //write new settings to EEPROM every half degree difference
-          serialBeerMessage(BEER_SETTING_FROM_PROFILE);
+          initControl();
           doNegPeakDetect=0;
           doPosPeakDetect=0;
           lastCoolTime=0;
@@ -41,7 +41,7 @@ void handleSerialCommunication(void){
           state=IDLE;
           lcdPrintState();
       }
-      initControl();
+      serialBeerMessage(BEER_SETTING_FROM_PROFILE);
       break;
     case 'f': //Set to constant fridge temperature
       newTemp = numberFromSerial();
