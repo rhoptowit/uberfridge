@@ -73,8 +73,9 @@ void updateSlowFilteredTemperatures(void){ //called every 10 seconds
    beerTempFiltSlow[0] = beerTempFiltSlow[1]; beerTempFiltSlow[1] = beerTempFiltSlow[2]; 
    beerTempFiltSlow[2] =   (beerTempSlow[0] + beerTempSlow[2] + 2 * beerTempSlow[1])/11408.29091
                + ( -0.9736948720    * beerTempFiltSlow[0]) + (  1.9733442498  * beerTempFiltSlow[1]);
-         
-   beerSlope = (beerTempFiltSlow[2]-beerTempFiltSlow[0])/2;
+
+   // Filter beerslope with a simple exponential filter
+   beerSlope = 0.9*beerSlope+0.1*((beerTempFiltSlow[2]-beerTempFiltSlow[0])/2);
 }
 
 void initFilters(void){
