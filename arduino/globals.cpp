@@ -13,17 +13,21 @@ float beerTemperatureActual;
 float beerTemperatureSetting=20; 
 float fridgeTemperatureActual; 
 float fridgeTemperatureSetting=20;
-float fridgeTempFiltFast[3];
-float fridgeTempFast[3]; //input for filter
-float beerTempFast[3];
-float beerTempFiltFast[3];
+float fridgeTempFiltFast[4];
+float fridgeTempFast[4]; //input for filter
+float beerTempFast[4];
+float beerTempFiltFast[4];
 
 // Slow filtered temperatures
-float fridgeTempFiltSlow[3];
-float fridgeTempSlow[3]; //input for filter
-float beerTempSlow[3];
-float beerTempFiltSlow[3];
+float fridgeTempFiltSlow[4];
+float fridgeTempSlow[4]; //input for filter
+float beerTempSlow[4];
+float beerTempFiltSlow[4];
 float beerSlope;
+
+// keep history of beer temps, to calculate slope
+float beerTempHistory[30];
+unsigned char beerTempHistoryIndex;
 
 // Control parameters
 float heatOvershootEstimator;
@@ -35,9 +39,11 @@ float posPeak;
 float differenceIntegral;
 
 //Timers 
-unsigned long slowTimer = 0;
-unsigned long fastTimer = 0;
-unsigned long sampleTimer = 0;
+unsigned long sampleTimerFast = 0;
+unsigned long sampleTimerSlow = 0;
+unsigned long slopeTimer = 0;
+unsigned long settingsTimer = 0;
+
 unsigned long lastCoolTime=0;
 unsigned long lastHeatTime=0;
 unsigned long lastIdleTime=0;

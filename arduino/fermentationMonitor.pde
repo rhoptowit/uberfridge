@@ -32,24 +32,28 @@ void setup()
 
 void loop()
 {
-  if(millis()-slowTimer > 10000){ //update slow filter every 10 seconds
-    slowTimer=millis();
+  if(millis()- sampleTimerFast > 200){ //update fast filters every 200 ms
+    sampleTimerFast=millis();
+    updateTemperatures();
+  }
+  if(millis()-sampleTimerSlow > 10000){ //update slow filter every 10 seconds
+    sampleTimerSlow=millis();
     updateSlowFilteredTemperatures();
     detectPeaks();
     updateSettings();
   }
-  if(millis()- sampleTimer > 200){
-    sampleTimer=millis();
-    updateTemperatures();
-  }
-  if(millis()-fastTimer >1000){
-    fastTimer=millis();
+  if(millis()-settingsTimer >1000){ //update settings every second
+    settingsTimer=millis();
     updateState();
     lcdPrintState();
     updateOutputs(); 
     lcdPrintAllTemperatures();
     lcdPrintMode();
 
+  }
+  if(millis()- slopeTimer > 60000){//update slope every minute. slope is tempdiff per 30 minutes
+    slopeTimer = millis();
+    updateSlope();
   }
  //listen for incoming serial connections while waiting top update
   handleSerialCommunication();  

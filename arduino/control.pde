@@ -6,8 +6,8 @@
 #define KpHeat 10
 #define KpCool 5
 #define Ki 0.02
-#define KdCool (-1000)
-#define KdHeat (-2000)
+#define KdCool -5
+#define KdHeat -10
 
 // Stay Idle when temperature is in this range
 #define IDLE_RANGE_HIGH (+5)
@@ -32,7 +32,7 @@ float Kd;
 // update fridge temperature setting, difference with beer setting is PID actuator
 void updateSettings(void){  
   if(mode == BEER_CONSTANT || mode == BEER_PROFILE){   
-    float beerTemperatureDifference =  beerTemperatureSetting-beerTempFiltSlow[2];
+    float beerTemperatureDifference =  beerTemperatureSetting-beerTempFiltSlow[3];
     if(abs(beerTemperatureDifference) < 5 && ((beerSlope <= 0.004 && beerSlope >= 0) || (beerSlope >= -0.008 && beerSlope <= 0))){     //difference is smaller than .3 degree and slope is almost horizontal
       differenceIntegral = differenceIntegral + beerTemperatureDifference;
     }
@@ -74,7 +74,7 @@ void updateState(void){
       if(((timeSinceCooling() > 900000UL || doNegPeakDetect==0) && (timeSinceHeating()>600000UL || doPosPeakDetect==0)) || state==STARTUP){ //if cooling is 15 min ago and heating 10
         if(fridgeTemperatureActual> fridgeTemperatureSetting+IDLE_RANGE_HIGH){
           if(mode!=FRIDGE_CONSTANT){
-            if(beerTempFiltSlow[2]>beerTemperatureSetting+0.5){ // only start cooling when beer is too warm (0.05 degree idle space)
+            if(beerTempFiltSlow[3]>beerTemperatureSetting+0.5){ // only start cooling when beer is too warm (0.05 degree idle space)
               state=COOLING;
             }
           }
@@ -85,7 +85,7 @@ void updateState(void){
         }
         if(fridgeTemperatureActual< fridgeTemperatureSetting+IDLE_RANGE_LOW){
           if(mode!=FRIDGE_CONSTANT){
-            if(beerTempFiltSlow[2]<beerTemperatureSetting-0.5){ // only start heating when beer is too cold (0.05 degree idle space)
+            if(beerTempFiltSlow[3]<beerTemperatureSetting-0.5){ // only start heating when beer is too cold (0.05 degree idle space)
               state=HEATING;
             }
           }
@@ -161,8 +161,8 @@ void updateOutputs(void){
 void detectPeaks(void){  
   //detect peaks in fridge temperature to tune overshoot estimators
   if(doPosPeakDetect && state!=HEATING){
-    if(fridgeTempFiltSlow[2] <= fridgeTempFiltSlow[1] && fridgeTempFiltSlow[1] >= fridgeTempFiltSlow[0]){ // maximum
-      posPeak=fridgeTempFiltSlow[1];       
+    if(fridgeTempFiltSlow[3] <= fridgeTempFiltSlow[2] && fridgeTempFiltSlow[2] >= fridgeTempFiltSlow[1]){ // maximum
+      posPeak=fridgeTempFiltSlow[2];       
       if(posPeak>fridgeSettingForPosPeakEstimate+HEATING_TARGET_UPPER){
         //should not happen, estimated overshoot was too low, so adjust overshoot estimator
         heatOvershootEstimator=heatOvershootEstimator*(1.2+min((posPeak-(fridgeSettingForPosPeakEstimate+HEATING_TARGET_UPPER))*.03,0.3));
@@ -176,9 +176,9 @@ void detectPeaks(void){
       doPosPeakDetect=0;
       serialFridgeMessage(POSPEAK);
     }
-    else if(timeSinceHeating() > 580000UL && timeSinceCooling() > 900000UL && fridgeTempFiltSlow[2] < fridgeSettingForPosPeakEstimate+HEATING_TARGET_LOWER){
+    else if(timeSinceHeating() > 580000UL && timeSinceCooling() > 900000UL && fridgeTempFiltSlow[3] < fridgeSettingForPosPeakEstimate+HEATING_TARGET_LOWER){
       //there was no peak, but the estimator is too low. This is the heat, then drift up situation.
-        posPeak=fridgeTempFiltSlow[2];
+        posPeak=fridgeTempFiltSlow[3];
         heatOvershootEstimator=heatOvershootEstimator*(0.8+max((posPeak-(fridgeSettingForPosPeakEstimate+HEATING_TARGET_LOWER))*.03,-0.3));
         saveSettings();
         doPosPeakDetect=0;
@@ -186,8 +186,8 @@ void detectPeaks(void){
     }
   }
   if(doNegPeakDetect && state!=COOLING){
-    if(fridgeTempFiltSlow[2] >= fridgeTempFiltSlow[1] && fridgeTempFiltSlow[1] <= fridgeTempFiltSlow[0]){ // minimum
-      negPeak=fridgeTempFiltSlow[1];
+    if(fridgeTempFiltSlow[3] >= fridgeTempFiltSlow[2] && fridgeTempFiltSlow[2] <= fridgeTempFiltSlow[1]){ // minimum
+      negPeak=fridgeTempFiltSlow[2];
       if(negPeak<fridgeSettingForNegPeakEstimate+COOLING_TARGET_LOWER){
         //should not happen, estimated overshoot was too low, so adjust overshoot estimator
         coolOvershootEstimator=coolOvershootEstimator*(1.2+min(((fridgeSettingForNegPeakEstimate+COOLING_TARGET_LOWER)-negPeak)*.03,0.3));
@@ -201,9 +201,9 @@ void detectPeaks(void){
       doNegPeakDetect=0;
       serialFridgeMessage(NEGPEAK); 
     } 
-    else if(timeSinceCooling() > 1780000UL && timeSinceHeating() > 1800000UL && fridgeTempFiltSlow[2] > fridgeSettingForNegPeakEstimate+COOLING_TARGET_UPPER){
+    else if(timeSinceCooling() > 1780000UL && timeSinceHeating() > 1800000UL && fridgeTempFiltSlow[3] > fridgeSettingForNegPeakEstimate+COOLING_TARGET_UPPER){
       //there was no peak, but the estimator is too low. This is the cool, then drift down situation.
-        negPeak=fridgeTempFiltSlow[2];
+        negPeak=fridgeTempFiltSlow[3];
         coolOvershootEstimator=coolOvershootEstimator*(0.8+max((negPeak-(fridgeSettingForNegPeakEstimate+COOLING_TARGET_UPPER))*.03,-0.3));
         saveSettings();
         doNegPeakDetect=0;
@@ -255,7 +255,7 @@ unsigned long timeSinceIdle(void){
 }
 
 void initControl(void){
-   if(beerTemperatureSetting<beerTempFiltSlow[2]){
+   if(beerTemperatureSetting<beerTempFiltSlow[3]){
      Kp=KpCool;
      Kd=KdCool;  
    }

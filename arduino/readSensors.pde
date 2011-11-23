@@ -35,69 +35,100 @@ float readTemperature(int sensorpin){
 }
 
 void updateTemperatures(void){ //called every 200 milliseconds  
-   fridgeTempFast[0] = fridgeTempFast[1]; fridgeTempFast[1] = fridgeTempFast[2]; 
-   fridgeTempFast[2] = readTemperature(fridgePin);   
+  fridgeTempFast[0] = fridgeTempFast[1]; fridgeTempFast[1] = fridgeTempFast[2]; fridgeTempFast[2] = fridgeTempFast[3]; 
+  fridgeTempFast[3] = readTemperature(fridgePin); 
 
-   beerTempFast[0] = beerTempFast[1]; beerTempFast[1] = beerTempFast[2]; 
-   beerTempFast[2] = readTemperature(beerPin);   
-   
-   // Butterworth filter with cutoff frequency 0.033*sample frequency (FS=5Hz)
-   fridgeTempFiltFast[0] = fridgeTempFiltFast[1]; fridgeTempFiltFast[1] = fridgeTempFiltFast[2]; 
-   fridgeTempFiltFast[2] =   (fridgeTempFast[0] + fridgeTempFast[2] + 2 * fridgeTempFast[1] )/106.9668733
-               + ( -0.7458605806   * fridgeTempFiltFast[0]) + (  1.7084658258    * fridgeTempFiltFast[1]); 
+  // Butterworth filter with cutoff frequency 0.033*sample frequency (FS=5Hz)
+  fridgeTempFiltFast[0] = fridgeTempFiltFast[1]; fridgeTempFiltFast[1] = fridgeTempFiltFast[2]; fridgeTempFiltFast[2] = fridgeTempFiltFast[3];
+  fridgeTempFiltFast[3] =   (fridgeTempFast[0] + fridgeTempFast[3] + 3 * (fridgeTempFast[1] + fridgeTempFast[2]))/1.092799972e+03
+              + ( 0.6600489526    * fridgeTempFiltFast[0]) + (  -2.2533982563     * fridgeTempFiltFast[1]) + ( 2.5860286592 * fridgeTempFiltFast[2] ); 
 
-   fridgeTemperatureActual = fridgeTempFiltFast[2];
+  fridgeTemperatureActual = fridgeTempFiltFast[2];
 
-   // Butterworth filter with cutoff frequency 0.01*sample frequency (FS=5Hz)
-   beerTempFiltFast[0] = beerTempFiltFast[1]; beerTempFiltFast[1] = beerTempFiltFast[2]; 
-   beerTempFiltFast[2] =   (beerTempFast[0] + beerTempFast[2] + 2 * beerTempFast[1] )/1058.546241
-               + ( -0.9149758348   * beerTempFiltFast[0]) + (  1.9111970674     * beerTempFiltFast[1]); 
+  beerTempFast[0] = beerTempFast[1]; beerTempFast[1] = beerTempFast[2]; beerTempFast[2] = beerTempFast[3]; 
+  beerTempFast[3] = readTemperature(beerPin); 
 
-   beerTemperatureActual = beerTempFiltFast[2];
+  // Butterworth filter with cutoff frequency 0.01*sample frequency (FS=5Hz)
+  beerTempFiltFast[0] = beerTempFiltFast[1]; beerTempFiltFast[1] = beerTempFiltFast[2]; beerTempFiltFast[2] = beerTempFiltFast[3];
+  beerTempFiltFast[3] =   (beerTempFast[0] + beerTempFast[3] + 3 * (beerTempFast[1] + beerTempFast[2]))/3.430944333e+04
+              + ( 0.8818931306    * beerTempFiltFast[0]) + (  -2.7564831952     * beerTempFiltFast[1]) + ( 2.8743568927 * beerTempFiltFast[2] ); 
+
+  beerTemperatureActual = beerTempFiltFast[2];
 }
 
 void updateSlowFilteredTemperatures(void){ //called every 10 seconds
-   // Input for filter
-   fridgeTempSlow[0] = fridgeTempSlow[1]; fridgeTempSlow[1] = fridgeTempSlow[2]; 
-   fridgeTempSlow[2] = fridgeTemperatureActual;
-   
-   // Butterworth filter with cutoff frequency 0.01*sample frequency. Used for peak detection
-   fridgeTempFiltSlow[0] = fridgeTempFiltSlow[1]; fridgeTempFiltSlow[1] = fridgeTempFiltSlow[2]; 
-   fridgeTempFiltSlow[2] =   (fridgeTempSlow[0] + fridgeTempSlow[2] + 2 * fridgeTempSlow[1])/1058.546241
-               + ( -0.9149758348  * fridgeTempFiltSlow[0]) + (  1.9111970674 * fridgeTempFiltSlow[1]);
+  // Input for filter
+  fridgeTempSlow[0] = fridgeTempSlow[1]; fridgeTempSlow[1] = fridgeTempSlow[2]; fridgeTempSlow[2] = fridgeTempSlow[3]; 
+  fridgeTempSlow[3] = fridgeTempFiltFast[3]; 
+  
+  // Butterworth filter with cutoff frequency 0.01*sample frequency (FS=0.1Hz)
+  fridgeTempFiltSlow[0] = fridgeTempFiltSlow[1]; fridgeTempFiltSlow[1] = fridgeTempFiltSlow[2]; fridgeTempFiltSlow[2] = fridgeTempFiltSlow[3];
+  fridgeTempFiltSlow[3] =   (fridgeTempSlow[0] + fridgeTempSlow[3] + 3 * (fridgeTempSlow[1] + fridgeTempSlow[2]))/3.430944333e+04
+              + ( 0.8818931306    * fridgeTempFiltSlow[0]) + (  -2.7564831952     * fridgeTempFiltSlow[1]) + ( 2.8743568927 * fridgeTempFiltSlow[2] ); 
                
-   beerTempSlow[0] = beerTempSlow[1]; beerTempSlow[1] = beerTempSlow[2]; 
-   beerTempSlow[2] = beerTemperatureActual;
+  beerTempSlow[0] = beerTempSlow[1]; beerTempSlow[1] = beerTempSlow[2]; beerTempSlow[2] = beerTempSlow[3]; 
+  beerTempSlow[3] = beerTempFiltFast[3]; 
+  
+   // Butterworth filter with cutoff frequency 0.01*sample frequency (FS=0.1Hz)
+  beerTempFiltSlow[0] = beerTempFiltSlow[1]; beerTempFiltSlow[1] = beerTempFiltSlow[2]; beerTempFiltSlow[2] = beerTempFiltSlow[3];
+  beerTempFiltSlow[3] =   (beerTempSlow[0] + beerTempSlow[3] + 3 * (beerTempSlow[1] + beerTempSlow[2]))/3.430944333e+04
+              + ( 0.8818931306    * beerTempFiltSlow[0]) + (  -2.7564831952     * beerTempFiltSlow[1]) + ( 2.8743568927 * beerTempFiltSlow[2] ); 
+  
+  /*              
+  beerSlopeFast[0] = beerSlopeFast[1]; beerSlopeFast[1] = beerSlopeFast[2]; beerSlopeFast[2] = beerSlopeFast[3]; 
+  beerSlopeFast[3] = (fridgeTempFiltSlow[3]-fridgeTempFiltSlow[0])/3;
+  
+   // Butterworth filter with cutoff frequency 0.0033*sample frequency (FS=5Hz)
+  beerSlopeFiltFast[0] = beerSlopeFiltFast[1]; beerSlopeFiltFast[1] = beerSlopeFiltFast[2]; beerSlopeFiltFast[2] = beerSlopeFiltFast[3];
+  beerSlopeFiltFast[3] =   (beerSlopeFast[0] + beerSlopeFast[3] + 3 * (beerSlopeFast[1] + beerSlopeFast[2]))/9.161507224e+05
+              + ( 0.9593783408    * beerSlopeFiltFast[0]) + (  -2.9179187925     * beerSlopeFiltFast[1]) + ( 2.9585317195 * beerSlopeFiltFast[2] );              
+              */
+}
 
-   // Butterworth filter with cutoff frequency 0.003*sample frequency.   
-   beerTempFiltSlow[0] = beerTempFiltSlow[1]; beerTempFiltSlow[1] = beerTempFiltSlow[2]; 
-   beerTempFiltSlow[2] =   (beerTempSlow[0] + beerTempSlow[2] + 2 * beerTempSlow[1])/11408.29091
-               + ( -0.9736948720    * beerTempFiltSlow[0]) + (  1.9733442498  * beerTempFiltSlow[1]);
-
-   // Filter beerslope with a simple exponential filter
-   beerSlope = 0.9*beerSlope+0.1*((beerTempFiltSlow[2]-beerTempFiltSlow[0])/2);
+void updateSlope(void){ //called every minute
+  beerTempHistory[beerTempHistoryIndex]=beerTempFiltSlow[3];
+  beerSlope = beerTempHistory[beerTempHistoryIndex]-beerTempHistory[(beerTempHistoryIndex+29)%30];
+  beerTempHistoryIndex = (beerTempHistoryIndex+1)%30;
+  
+  /*
+  beerSlopeSlow[0] = beerSlopeSlow[1]; beerSlopeSlow[1] = beerSlopeSlow[2]; beerSlopeSlow[2] = beerSlopeSlow[3]; 
+  beerSlopeSlow[3] = beerSlopeFiltFast[3];  
+  
+   // Butterworth filter with cutoff frequency 0.0033*sample frequency (FS=0.017Hz)
+  beerSlopeFiltSlow[0] = beerSlopeFiltSlow[1]; beerSlopeFiltSlow[1] = beerSlopeFiltSlow[2]; beerSlopeFiltSlow[2] = beerSlopeFiltSlow[3];
+  beerSlopeFiltSlow[3] =   (beerSlopeSlow[0] + beerSlopeSlow[3] + 3 * (beerSlopeSlow[1] + beerSlopeSlow[2]))/9.161507224e+05
+              + ( 0.9593783408    * beerSlopeFiltSlow[0]) + (  -2.9179187925     * beerSlopeFiltSlow[1]) + ( 2.9585317195 * beerSlopeFiltSlow[2] );   
+              */ 
 }
 
 void initFilters(void){
   beerTemperatureActual = readTemperature(beerPin);
   fridgeTemperatureActual = readTemperature(fridgePin);
-  for(int i=0;i<3;i++){
+  for(int i=0;i<4;i++){
     fridgeTempFast[i]=fridgeTemperatureActual;
     fridgeTempFiltFast[i]=fridgeTemperatureActual;
     beerTempFast[i]=beerTemperatureActual;
     beerTempFiltFast[i]=beerTemperatureActual;
-    
+    //beerSlopeFast[i]=0;
+    //beerSlopeFiltFast[i]=0;    
   }
   for(int i=0;i<100;i++){
     updateTemperatures();
   }
-  for(int i=0;i<3;i++){
-    fridgeTempSlow[i]=fridgeTempFiltFast[2];
-    fridgeTempFiltSlow[i]=fridgeTempFiltFast[2];
-    beerTempSlow[i]=beerTempFiltFast[2];
-    beerTempFiltSlow[i]=beerTempFiltFast[2];
+  for(int i=0;i<4;i++){
+    fridgeTempSlow[i]=fridgeTempFiltFast[3];
+    fridgeTempFiltSlow[i]=fridgeTempFiltFast[3];
+    beerTempSlow[i]=beerTempFiltFast[3];
+    beerTempFiltSlow[i]=beerTempFiltFast[3];
+    //beerSlopeSlow[i]=0;
+    //beerSlopeFiltSlow[i]=0;
   }
   for(int i=0;i<100;i++){
     updateSlowFilteredTemperatures();
   }
+  for(int i=0;i<30;i++){
+    beerTempHistory[i]=beerTempFiltSlow[3]; 
+  }
+  beerSlope=0;
+  beerTempHistoryIndex=0;
 }
