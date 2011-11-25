@@ -79,7 +79,6 @@ void updateSlope(void){ //called every minute
   beerTempHistory[beerTempHistoryIndex]=beerTempFiltSlow[3];
   beerSlope = beerTempHistory[beerTempHistoryIndex]-beerTempHistory[(beerTempHistoryIndex+1)%30];
   beerTempHistoryIndex = (beerTempHistoryIndex+1)%30;
-
 }
 
 void initFilters(void){

@@ -34,7 +34,9 @@ void updateSettings(void){
   if(mode == BEER_CONSTANT || mode == BEER_PROFILE){   
     float beerTemperatureDifference =  beerTemperatureSetting-beerTempFiltSlow[3];
     if(abs(beerTemperatureDifference) < 5 && ((beerSlope <= 0.7 && beerSlope >= 0) || (beerSlope >= -1.4 && beerSlope <= 0))){     //difference is smaller than .5 degree and slope is almost horizontal
-      differenceIntegral = differenceIntegral + beerTemperatureDifference;
+      if(abs(beerTemperatureDifference)< 0.5){
+        differenceIntegral = differenceIntegral + beerTemperatureDifference;
+      }
     }
     else{
       differenceIntegral = 0;
@@ -42,11 +44,11 @@ void updateSettings(void){
     
     if(beerTemperatureDifference<0){ //linearly go to cool parameters in 3 hours
       Kp = constrain(Kp+(KpCool-KpHeat)/(360*3), KpCool, KpHeat);
-      Kd = constrain(Kd+(KdCool-KdHeat)/(360*3), KdCool, KdHeat);
+      Kd = constrain(Kd+(KdCool-KdHeat)/(360*3), KdHeat, KdCool);
     }
     else{ //linearly go to heat parameters in 3 hours
       Kp = constrain(Kp+(KpHeat-KpCool)/(360*3), KpCool, KpHeat);
-      Kd = constrain(Kd+(KdHeat-KdCool)/(360*3), KdCool, KdHeat);
+      Kd = constrain(Kd+(KdHeat-KdCool)/(360*3), KdHeat, KdCool);
     }
     fridgeTemperatureSetting = constrain(beerTemperatureSetting + Kp* beerTemperatureDifference + Ki* differenceIntegral + Kd*beerSlope, 40, 300);      
   }
