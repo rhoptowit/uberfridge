@@ -31,8 +31,9 @@ void handleSerialCommunication(void){
       mode = BEER_PROFILE;
       updateSettings();
       if(abs(beerTemperatureSetting - eepromReadInt(EEPROM_BEER_SETTING))>=5){
-          saveSettings(); //write new settings to EEPROM every half degree difference
           initControl();
+          updateSettings();
+          saveSettings(); //write new settings to EEPROM every half degree difference
           doNegPeakDetect=0;
           doPosPeakDetect=0;
           lastCoolTime=0;
