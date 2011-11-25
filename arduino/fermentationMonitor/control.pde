@@ -34,12 +34,12 @@ void updateSettings(void){
   if(mode == BEER_CONSTANT || mode == BEER_PROFILE){   
     float beerTemperatureDifference =  beerTemperatureSetting-beerTempFiltSlow[3];
     if(abs(beerTemperatureDifference) < 5 && ((beerSlope <= 0.7 && beerSlope >= 0) || (beerSlope >= -1.4 && beerSlope <= 0))){     //difference is smaller than .5 degree and slope is almost horizontal
-      if(abs(beerTemperatureDifference)< 0.5){
+      if(abs(beerTemperatureDifference)> 0.5){
         differenceIntegral = differenceIntegral + beerTemperatureDifference;
       }
     }
     else{
-      differenceIntegral = 0;
+      differenceIntegral = differenceIntegral*0.9;
     }
     
     if(beerTemperatureDifference<0){ //linearly go to cool parameters in 3 hours
