@@ -204,6 +204,11 @@ while(run):
 				if line.count(";")==5:
 					#valid data received
 					lineAsFile = StringIO.StringIO(line) #open line as a file to use it with csv.reader
+					if '\0' in lineAsFile:
+						print >> sys.stderr, "CSV line from Arduino contains NULL byte, skipping line"
+						continue
+					
+					lineAsFile = StringIO.StringIO(line) #reopen line as file, because checking for NULL byte causes the reader to not read anything 	
 					reader = csv.reader(lineAsFile, delimiter=';',quoting=csv.QUOTE_NONNUMERIC)
 					for	row	in reader: #Relace empty annotations with None
 						if(row[2]==''):
