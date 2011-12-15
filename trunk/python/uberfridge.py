@@ -19,7 +19,7 @@ ser	=	serial.Serial('/dev/usb/tts/0',9600,timeout=2)
 beerNameFile = open('/mnt/uberfridge/settings/currentBeerName.txt')
 currentBeerName = beerNameFile.readline()
 beerNameFile.close()
-print >> sys.stderr, "Notification: Script started for beer \"" + currentBeerName + "\" on " + time.strftime("%b %d %Y %H:%M:%S")
+print >> sys.stderr, time.strftime("%b %d %Y %H:%M:%S   ") + "Notification: Script started for beer \"" + currentBeerName
 dataPath = '/mnt/uberfridge/data/' + currentBeerName
 wwwDataPath = '/opt/share/www/lighttpd/data/' + currentBeerName
 if not os.path.exists(dataPath):
@@ -39,7 +39,7 @@ intervalFile.close()
 
 serialCheckInterval = 5.0 #Check serial port for data every x seconds
 
-print >> sys.stderr, "Previous settings: mode = " + mode + ", temperature = " + str(temperatureSetting)
+print >> sys.stderr, time.strftime("%b %d %Y %H:%M:%S   ") + "Previous settings: mode = " + mode + ", temperature = " + str(temperatureSetting)
 
 # Define Google data table description and create empty data table
 description = {	"Time": 		("datetime","Time"),
@@ -98,7 +98,7 @@ while(run):
 	if lastDay != day:
 		 #empty data table and write to new files
 		dataTable.LoadData([])
-		print >> sys.stderr, "Notification: New day, dropping data table and creating new JSON file."
+		print >> sys.stderr, time.strftime("%b %d %Y %H:%M:%S   ") + "Notification: New day, dropping data table and creating new JSON file."
 		jsonFileName= currentBeerName + '/' + currentBeerName + '-' + day
 		localJsonFileName = '/mnt/uberfridge/data/' + jsonFileName + '.json'
 		wwwJsonFileName='/opt/share/www/lighttpd/data/' + jsonFileName + '.json'
@@ -134,19 +134,19 @@ while(run):
 				mode='beer'
 				modeChanged=1;
 				temperatureSetting=newTemp
-				print >> sys.stderr, "Notification: Beer temperature set to " + str(float(newTemp)/10) + " degrees Celcius"
+				print >> sys.stderr, time.strftime("%b %d %Y %H:%M:%S   ") + "Notification: Beer temperature set to " + str(float(newTemp)/10) + " degrees Celcius"
 		elif(data[0]=='f'):			#new constant fridge temperature received
 			newTemp = int(data[1:])
 			if(newTemp>0 and newTemp<300):
 				mode='fridge'
 				modeChanged=1;
 				temperatureSetting=newTemp
-				print >> sys.stderr, "Notification: Fridge temperature set to " + str(float(newTemp)/10) + " degrees Celcius"
+				print >> sys.stderr, time.strftime("%b %d %Y %H:%M:%S   ") + "Notification: Fridge temperature set to " + str(float(newTemp)/10) + " degrees Celcius"
 		elif(data[0]=='p'):			#mode set to profile, read temperatures from currentprofile.csv
 			mode='profile'
 			temperatureSetting = temperatureProfile.getNewTemp()
 			modeChanged=1;
-			print >> sys.stderr, "Notification: Profile mode enabled"	
+			print >> sys.stderr, time.strftime("%b %d %Y %H:%M:%S   ") + "Notification: Profile mode enabled"	
 		elif(data[0]=='l'):			#lcd contents requested
 			conn.send(lcdText)
 		elif(data[0]=='i'):			#new interval received
@@ -156,7 +156,7 @@ while(run):
 				intervalFile = open('/mnt/uberfridge/settings/interval.txt',"w")
 				intervalFile.write(str(newInterval))
 				intervalFile.close()
-				print >> sys.stderr, "Notification: Interval changed to " + str(newInterval) + " seconds"
+				print >> sys.stderr, time.strftime("%b %d %Y %H:%M:%S   ") + "Notification: Interval changed to " + str(newInterval) + " seconds"
 		elif(data[0]=='n'):			#new beer name
 			newName = data[1:]
 			if(len(newName)>3):		#shorter names are probably invalid
@@ -186,11 +186,11 @@ while(run):
 				
 				dataTable.LoadData([]) #discard data table
 				
-				print >> sys.stderr, "Notification: restarted for beer: " + newName
+				print >> sys.stderr, time.strftime("%b %d %Y %H:%M:%S   ") + "Notification: restarted for beer: " + newName
 				continue				
 			
 		else:
-			print >> sys.stderr, "Error: Received invalid packet on socket: " + data
+			print >> sys.stderr, time.strftime("%b %d %Y %H:%M:%S   ") + "Error: Received invalid packet on socket: " + data
 		
 		raise socket.timeout #raise exception to check serial for data immediately
 	
@@ -205,7 +205,7 @@ while(run):
 					#valid data received
 					lineAsFile = StringIO.StringIO(line) #open line as a file to use it with csv.reader
 					if '\0' in lineAsFile:
-						print >> sys.stderr, "CSV line from Arduino contains NULL byte, skipping line"
+						print >> sys.stderr, time.strftime("%b %d %Y %H:%M:%S   ") + "CSV line from Arduino contains NULL byte, skipping line"
 						continue
 					
 					lineAsFile = StringIO.StringIO(line) #reopen line as file, because checking for NULL byte causes the reader to not read anything 	
@@ -233,14 +233,14 @@ while(run):
 						
 					prevDataTime = time.time() #store time of last new data for interval check
 				else:
-					print >> sys.stderr, "Error: Received	invalid	line: " + line
+					print >> sys.stderr, time.strftime("%b %d %Y %H:%M:%S   ") + "Error: Received	invalid	line: " + line
 			elif((time.time() - prevDataTime) >= serialRequestInterval): #if no new data has been received for serialRequestInteval seconds, request it
 				ser.write("r")		#	request	new	data from	arduino
 				time.sleep(1)			# give the arduino time to respond
 				continue
 			elif(time.time() - prevDataTime > serialRequestInterval+2*serialCheckInterval):
 				#something is wrong: arduino is not responding to data requests
-				print >> sys.stderr, "Error: Arduino is not responding to new data requests"
+				print >> sys.stderr, time.strftime("%b %d %Y %H:%M:%S   ") + "Error: Arduino is not responding to new data requests"
 			else:
 				break
 						
@@ -281,7 +281,7 @@ while(run):
 				mode=arduinoMode
 				temperatureSetting=arduinoTemperature
 				modeChanged=1
-				print >> sys.stderr, "Mode set to " + mode + " " + str(temperatureSetting) + " in Arduino menu"			
+				print >> sys.stderr, time.strftime("%b %d %Y %H:%M:%S   ") + "Mode set to " + mode + " " + str(temperatureSetting) + " in Arduino menu"			
 			
 		if(modeChanged):
 			# Store new settings
@@ -297,7 +297,7 @@ while(run):
 		lcdText = ser.readline()
 			
 	except socket.error, e:
-		print >>sys.stderr, "socket error: %s" % e
+		print >>sys.stderr, time.strftime("%b %d %Y %H:%M:%S   ") + "socket error: %s" % e
 			
 ser.close()						# close	port
 conn.shutdown(socket.SHUT_RDWR) # close socket
