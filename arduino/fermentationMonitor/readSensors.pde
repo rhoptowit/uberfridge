@@ -43,7 +43,7 @@ void updateTemperatures(void){ //called every 200 milliseconds
   fridgeTempFiltFast[3] =   (fridgeTempFast[0] + fridgeTempFast[3] + 3 * (fridgeTempFast[1] + fridgeTempFast[2]))/1.092799972e+03
               + ( 0.6600489526    * fridgeTempFiltFast[0]) + (  -2.2533982563     * fridgeTempFiltFast[1]) + ( 2.5860286592 * fridgeTempFiltFast[2] ); 
 
-  fridgeTemperatureActual = fridgeTempFiltFast[2];
+  fridgeTemperatureActual = fridgeTempFiltFast[3];
 
   beerTempFast[0] = beerTempFast[1]; beerTempFast[1] = beerTempFast[2]; beerTempFast[2] = beerTempFast[3]; 
   beerTempFast[3] = readTemperature(beerPin); 
@@ -53,7 +53,7 @@ void updateTemperatures(void){ //called every 200 milliseconds
   beerTempFiltFast[3] =   (beerTempFast[0] + beerTempFast[3] + 3 * (beerTempFast[1] + beerTempFast[2]))/3.430944333e+04
               + ( 0.8818931306    * beerTempFiltFast[0]) + (  -2.7564831952     * beerTempFiltFast[1]) + ( 2.8743568927 * beerTempFiltFast[2] ); 
 
-  beerTemperatureActual = beerTempFiltFast[2];
+  beerTemperatureActual = beerTempFiltFast[3];
 }
 
 void updateSlowFilteredTemperatures(void){ //called every 10 seconds
